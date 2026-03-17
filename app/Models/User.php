@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,7 +17,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
     ];
@@ -42,7 +42,14 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'premium_until' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public static function getPremiumUsers(){
+        return self::whereNotNull('premium_until')
+                     ->where('premium_until', '>', now())
+                     ->get();
     }
 }
