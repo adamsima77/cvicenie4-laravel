@@ -6,6 +6,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -23,8 +24,14 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+         $validation = $request->validate([
+             'name' => ['required', 'string', 'min:3', 'max:255', 'unique:categories,name'],
+             'color' => ['required', 'string', 'min:3', 'max:255']
+         ]);
+
          Category::create([
-             'name' => $request->name,
+             'name' => $validation['name'],
+             'color' => $validation['color'],
          ]);
 
          return response()->json(['message' => 'Kategória bola úspešne vytvorená'], Response::HTTP_CREATED);
@@ -33,26 +40,24 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Category $category)
     {
-        $category = Category::find($id);
-        if (!$category) {
-            return response()->json(['message' => 'Kategória nebola nájdená.'], Response::HTTP_NOT_FOUND);
-        }
         return response()->json(['category' => $category], Response::HTTP_OK);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Category $category)
     {
-        $category = Category::find($id);
-        if (!$category) {
-            return response()->json(['message' => 'Kategória sa nenašla.'], Response::HTTP_NOT_FOUND);
-        }
+        $validation = $request->validate([
+            'name' => ['required', 'string', 'min:3', 'max:255',
+                Rule::unique('categories', 'name')->ignore($category)],
+            'color' => ['required', 'string', 'min:3', 'max:255']
+        ]);
         $category->update([
-            'name' => $request->name,
+            'name' => $validation['name'],
+            'color' => $validation['color'],
         ]);
 
         return response()->json(['message' => 'Kategória bola úspešne upravená'], Response::HTTP_OK);
@@ -61,12 +66,8 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        $category = Category::find($id);
-        if (!$category) {
-            return response()->json(['message' => 'Kategória sa nenašla.'], Response::HTTP_NOT_FOUND);
-        }
         $category->delete();
         return response()->json(['message' => 'Kategória bola úspešne zmazaná'], Response::HTTP_OK);
     }
