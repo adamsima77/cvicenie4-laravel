@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use App\Comment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +25,7 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'image'
     ];
 
     /**
@@ -71,5 +73,13 @@ class User extends Authenticatable
             'id'
         );
     }
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
+    public function hasActivePremium(): bool
+    {
+        return $this->premium_until !== null && $this->premium_until->isFuture();
+    }
 }

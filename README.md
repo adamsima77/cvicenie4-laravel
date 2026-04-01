@@ -1,55 +1,27 @@
 <p align="center">
-  <img src="img/cvicenie6/get_categories.jpg" alt="get_categories" width="600" />
+  <img src="img/cvicenie7/change_password.jpg" alt="change_password" width="600" />
 </p>
 
 <p align="center">
-  <img src="img/cvicenie6/get_category.jpg" alt="get_category" width="600" />
+  <img src="img/cvicenie7/edit_user.jpg" alt="edit_user" width="600" />
 </p>
 
 <p align="center">
-  <img src="img/cvicenie6/create_category.jpg" alt="create_category" width="600" />
+  <img src="img/cvicenie7/login_user.jpg" alt="login_user" width="600" />
 </p>
 
 <p align="center">
-  <img src="img/cvicenie6/update_category.jpg" alt="update_category" width="600" />
+  <img src="img/cvicenie7/logout.jpg" alt="logout" width="600" />
 </p>
 
 <p align="center">
-  <img src="img/cvicenie6/delete_category.jpg" alt="delete_category" width="600" />
+  <img src="img/cvicenie7/logout_all.jpg" alt="logout_all" width="600" />
 </p>
 
 <p align="center">
-  <img src="img/cvicenie6/category_empty_name.jpg" alt="category_empty_name" width="600" />
+  <img src="img/cvicenie7/me.jpg" alt="me" width="600" />
 </p>
 
 <p align="center">
-  <img src="img/cvicenie6/category_unique_name.jpg" alt="category_unique_name" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/get_note_comments_tasks.jpg" alt="get_note_with_tasks_comments" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/create_task.jpg" alt="create_task" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/delete_task.jpg" alt="delete_task" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/422_task.jpg" alt="validation_error_task" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/404_task.jpg" alt="task_not_found" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/404_category.jpg" alt="category_not_found" width="600" />
-</p>
-
-<p align="center">
-  <img src="img/cvicenie6/note_404.jpg" alt="note_not_found" width="600" />
+  <img src="img/cvicenie7/register_user.jpg" alt="register_user" width="600" />
 </p>
