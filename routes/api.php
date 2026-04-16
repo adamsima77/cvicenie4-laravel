@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
@@ -22,11 +24,8 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::post('/notes/pin_note/{id}/pin', [NoteController::class, 'pinNote']);
-Route::post('/notes/unpin_note/{id}/unpin', [NoteController::class, 'unpinNote']);
-Route::post('notes/archive_note/{id}/archive', [NoteController::class, 'archiveNote']);
-Route::post('notes/publish_note/{id}/publish', [NoteController::class, 'publishNote']);
-Route::apiResource('notes', NoteController::class);
+
+
 
 Route::get('notes/stats/status', [NoteController::class, 'statsByStatus']);
 
@@ -48,6 +47,43 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+Route::prefix('notes')->group(function () {
+    Route::post('/pin_note/{id}/pin', [NoteController::class, 'pinNote']);
+    Route::post('/unpin_note/{id}/unpin', [NoteController::class, 'unpinNote']);
+    Route::post('/archive_note/{id}/archive', [NoteController::class, 'archiveNote']);
+    Route::post('/publish_note/{id}/publish', [NoteController::class, 'publishNote']);
+    Route::get('/my-notes', [NoteController::class, 'myNotes'])->middleware('auth:sanctum');
+
+    Route::apiResource('', NoteController::class);
+
+});
+
 Route::get('users/get_premium_users', [UserController::class, 'fetchPremiumUsers']);
 Route::apiResource('users', UserController::class);
 Route::apiResource('notes.tasks', TaskController::class)->scoped();
+
+Route::get('/attachments/{attachment:public_id}/link', [AttachmentController::class, 'link']);
+
+
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('comments', CommentController::class);
+    Route::prefix('comments')->group(function () {
+        Route::get('/task_index', [CommentController::class, 'taskIndex']);
+        Route::get('/note_index', [CommentController::class, 'noteIndex']);
+        Route::post('/task_store', [CommentController::class, 'taskStore']);
+        Route::post('/note_store', [CommentController::class, 'noteStore']);
+
+    });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('notes/{note}')->group(function () {
+        Route::get('attachments', [AttachmentController::class, 'index']);
+        Route::post('attachments', [AttachmentController::class, 'store'])
+            ->middleware('premium_only');
+    });
+    Route::get('attachments/{attachment:public_id}/link', [AttachmentController::class, 'link']);
+    Route::delete('attachments/{attachment:public_id}', [AttachmentController::class, 'destroy']);
+});

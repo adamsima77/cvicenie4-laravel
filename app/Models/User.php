@@ -6,6 +6,7 @@ use App\Comment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -76,6 +77,12 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function profilePhoto(): MorphOne
+    {
+        return $this->morphOne(Attachment::class, 'attachable')
+            ->where('collection', 'profile_photo');
     }
 
     public function hasActivePremium(): bool

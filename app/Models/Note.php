@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Comment;
+use App\Models\Comment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -93,5 +93,11 @@ class Note extends Model
     public function comments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')
+            ->where('collection', 'attachment');
     }
 }

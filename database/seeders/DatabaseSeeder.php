@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Comment;
+use App\Models\Comment;
 use App\Models\Category;
 use App\Models\Note;
 use App\Models\Task;

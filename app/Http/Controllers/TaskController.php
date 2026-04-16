@@ -14,7 +14,16 @@ class TaskController extends Controller
      */
     public function index(Note $note)
     {
-        return response()->json(['tasks' => $note->tasks], Response::HTTP_OK);
+        // kto môže vidieť note, môže vidieť aj jej tasky
+        $this->authorize('view', [Task::class, $note]);
+
+        $tasks = $note->tasks()
+            ->orderBy('created_at')
+            ->get();
+
+        return response()->json([
+            'tasks' => $tasks,
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -22,6 +31,7 @@ class TaskController extends Controller
      */
     public function store(Request $request, Note $note)
     {
+        $this->authorize('create', [Task::class, $note]);
         $validated = $request->validate([
           'title' => ['required', 'string', 'max:255'],
           'is_done' => ['sometimes', 'boolean'],
@@ -44,6 +54,7 @@ class TaskController extends Controller
         if($task->note_id != $note->id){
             return response()->json(['message' => 'Úloha nepatrí tejto poznámke.'], Response::HTTP_NOT_FOUND);
         }
+        $this->authorize('view', [Task::class, $task]);
         return response()->json(['tasks' => $task, 'note' => $note], Response::HTTP_OK);
     }
 
@@ -52,6 +63,7 @@ class TaskController extends Controller
      */
     public function update(Request $request, Note $note, Task $task)
     {
+        $this->authorize('update', [Task::class, $task]);
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'is_done' => ['sometimes', 'boolean'],
@@ -71,6 +83,7 @@ class TaskController extends Controller
      */
     public function destroy(Note $note, Task $task)
     {
+        $this->authorize('delete', [Task::class, $task]);
         if ($task->note_id !== $note->id) {
             return response()->json([
                 'message' => 'Úloha nepatrí tejto poznámke.'

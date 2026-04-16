@@ -16,15 +16,38 @@ class NoteController extends Controller
 
     public function index()
     {
+        $this->authorize('viewAny', Note::class);
+
         $notes = Note::query()
             ->select(['id', 'user_id', 'title', 'body', 'status', 'is_pinned', 'created_at'])
             ->with([
                 'user:id,first_name,last_name',
                 'categories:id,name,color',
+                'attachments:id,attachable_id,attachable_type,file_name'
+            ])
+            ->whereIn('status', ['published', 'archived'])
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('created_at')
+            ->paginate(5);
+
+        return response()->json([
+            'notes' => $notes,
+        ], Response::HTTP_OK);
+    }
+
+    public function myNotes(Request $request)
+    {
+        $this->authorize('viewAny', Note::class);
+
+        $notes = $request->user()
+            ->notes()
+            ->select(['id', 'user_id', 'title', 'body', 'status', 'is_pinned', 'created_at'])
+            ->with([
+                'categories:id,name,color',
             ])
             ->orderByDesc('is_pinned')
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(5);
 
         return response()->json([
             'notes' => $notes,
@@ -36,6 +59,7 @@ class NoteController extends Controller
         if(!$note){
             return response()->json(['message' => 'Poznámka neexistuje.'], Response::HTTP_NOT_FOUND);
         }
+        $this->authorize('pin', $note);
          $note->pin();
          return response()->json(['message' => 'Poznámka bola úspešne pripnutá.'], Response::HTTP_OK);
     }
@@ -45,6 +69,7 @@ class NoteController extends Controller
         if(!$note){
             return response()->json(['message' => 'Poznámka neexistuje.'], Response::HTTP_NOT_FOUND);
         }
+        $this->authorize('unpin', $note);
         $note->unpin();
         return response()->json(['message' => 'Poznámka bola úspešne odopnutá.'], Response::HTTP_OK);
     }
@@ -54,6 +79,7 @@ class NoteController extends Controller
         if(!$note){
             return response()->json(['message' => 'Poznámka neexistuje.'], Response::HTTP_NOT_FOUND);
         }
+        $this->authorize('archive', $note);
         $note->archive();
         return response()->json(['message' => 'Poznámka bola archivovaná.'], Response::HTTP_OK);
     }
@@ -63,6 +89,7 @@ class NoteController extends Controller
         if(!$note){
             return response()->json(['message' => 'Poznámka neexistuje'], Response::HTTP_NOT_FOUND);
         }
+        $this->authorize('publish', $note);
         $note->publish();
         return response()->json(['message' => 'Poznámka bola uverejnená.'], Response::HTTP_OK);
     }
@@ -73,9 +100,9 @@ class NoteController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+        $this->authorize('create', Note::class);
 
+        $validated = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'body'  => ['nullable', 'string'],
             'status' => ['sometimes', 'required', 'string', Rule::in(['draft', 'published', 'archived'])],
@@ -85,8 +112,8 @@ class NoteController extends Controller
             'categories.*' => ['integer', 'distinct', 'exists:categories,id'],
         ]);
 
-        $note = Note::create([
-            'user_id'   => $validated['user_id'],
+        // alebo lepšie riešenie, len potom odstráňte z fillable user_id...
+        $note = $request->user()->notes()->create([
             'title'     => $validated['title'],
             'body'      => $validated['body'] ?? null,
             'status'    => $validated['status'] ?? 'draft',
@@ -124,6 +151,8 @@ class NoteController extends Controller
             return response()->json(['message' => 'Poznámka nenájdená.'], Response::HTTP_NOT_FOUND);
         }
 
+        $this->authorize('view', $note);
+
         return response()->json(['note' => $note], Response::HTTP_OK);
     }
 
@@ -142,6 +171,8 @@ class NoteController extends Controller
             );
         }
 
+        $this->authorize('update', [Note::class, $note]);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'body'  => ['nullable', 'string'],
@@ -151,10 +182,8 @@ class NoteController extends Controller
             'categories.*' => ['integer', 'distinct', 'exists:categories,id'],
         ]);
 
-        // aktualizujeme iba to, čo prešlo validáciou
         $note->update($validated);
 
-        // spoj. tabulku synchronizujeme iba ak boli poslané idčka
         if (array_key_exists('categories', $validated)) {
             $note->categories()->sync($validated['categories']);
         }
@@ -179,6 +208,7 @@ class NoteController extends Controller
         if (!$note) {
             return response()->json(['message' => 'Poznámka nenájdená.'], Response::HTTP_NOT_FOUND);
         }
+        $this->authorize('delete', $note);
         $note->delete();
         return response()->json(['message' => 'Poznámka bola úspešne odstránená.'], Response::HTTP_OK);
     }
@@ -191,6 +221,8 @@ class NoteController extends Controller
                        ->orderBy('status')
                        ->get();
 
+        $this->authorize('view', [Note::class, $stats]);
+
         return response()->json(['stats' => $stats], Response::HTTP_OK);
     }
 
@@ -202,7 +234,7 @@ class NoteController extends Controller
                           ->update([
                               'status' => 'archived',
                           ]);
-
+        $this->authorize('archive_old', [Note::class, $affected]);
         return response()->json([
             'message' => 'Staré koncepty boli archivované.',
             'affected_rows' => $affected,
@@ -218,6 +250,7 @@ class NoteController extends Controller
                      ->orderBy('notes.updated_at', 'desc')
                      ->select('notes.id', 'notes.title', 'categories.name as category')
                      ->get();
+        $this->authorize('user_notes', [Note::class, $rows]);
         return response()->json(['notes' => $rows], Response::HTTP_OK);
     }
 }
